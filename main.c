@@ -31,12 +31,12 @@ int main() {
         printf("\n====================================");
         printf("\n|      SISTEMA DA CONCESSIONARIA   |");
         printf("\n====================================");
-        printf("\n| 1 - Clientes                     |");
-        printf("\n| 2 - Veiculos                     |");
-        printf("\n| 3 - Vendas                       |");
-        printf("\n| 4 - Locacoes                     |");
-        printf("\n| 5 - Relatorio Financeiro         |");
-        printf("\n| 0 - Sair                         |");
+        printf("\n|     1 - Clientes                 |");
+        printf("\n|     2 - Veiculos                 |");
+        printf("\n|     3 - Vendas                   |");
+        printf("\n|     4 - Locacoes                 |");
+        printf("\n|     5 - Relatorio Financeiro     |");
+        printf("\n|     0 - Sair                     |");
         printf("\n====================================");
         printf("\nDigite a opcao: ");
         scanf("%d", &opcao);

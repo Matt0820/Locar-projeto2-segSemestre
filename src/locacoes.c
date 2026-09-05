@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/modelos.h"
+#include "../include/clientes.h"
+#include "../include/util.h"
+#include "../include/veiculos.h"
 
 void limparBuffer() {
     int c;

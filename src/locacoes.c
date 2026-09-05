@@ -3,13 +3,8 @@
 #include <string.h>
 #include "../include/modelos.h"
 #include "../include/clientes.h"
-#include "../include/util.h"
 #include "../include/veiculos.h"
-
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
+#include "../include/util.h"
 
 // =======================================================
 //                    MÓDULO DE LOCAÇÃO

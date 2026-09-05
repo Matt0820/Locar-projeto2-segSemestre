@@ -3,14 +3,10 @@
 #include "include/modelos.h"
 #include "include/clientes.h"
 #include "include/locacoes.h"
-#include "include/relatorios.h"
 #include "include/vendas.h"
 #include "include/veiculos.h"
-
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
+#include "include/relatorios.h"
+#include "include/util.h"
 
 // =======================================================
 //                  PROGRAMA PRINCIPAL-

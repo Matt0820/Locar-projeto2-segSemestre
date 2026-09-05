@@ -2,11 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/modelos.h"
+#include "../include/util.h"
 
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
 // =======================================================
 //                  RELATÓRIO FINANCEIRO
 // =======================================================

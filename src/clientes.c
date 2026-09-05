@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/modelos.h"
-
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
+#include "../include/util.h"
 
 // =======================================================
 //                    MÓDULO DE CLIENTES

@@ -18,6 +18,7 @@ set(SOURCES
     src/relatorios.c
     src/veiculos.c
     src/vendas.c
+    src/util.c
     data/dados.c
 )
 

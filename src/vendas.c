@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/modelos.h"
-
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
+#include "../include/util.h"
+#include"../include/vendas.h"
+#include "../include/clientes.h"
+#include "../include/veiculos.h"
 
 // =======================================================
 //                    MÓDULO DE VENDAS

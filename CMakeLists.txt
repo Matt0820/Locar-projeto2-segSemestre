@@ -20,6 +20,7 @@ set(SOURCES
     src/vendas.c
     src/util.c
     data/dados.c
+    src/manutencao.c
 )
 
 # Cria o executável chamando-o de "Locar"

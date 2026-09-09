@@ -3,63 +3,42 @@
 #include <string.h>
 #include "../include/modelos.h"
 #include "../include/util.h"
-#include"../include/vendas.h"
+#include "../include/vendas.h"
 #include "../include/clientes.h"
 #include "../include/veiculos.h"
 
-// =======================================================
-//                    MÓDULO DE VENDAS
-// =======================================================
-
 void realizarVenda(Veiculo **veiculos, int *totalVeiculos, Cliente **clientes, int *totalClientes, int *capClientes, Venda **vendas, int *totalVendas, int *capVendas) {
-    if (*totalVeiculos == 0) {
-        printf("\nNenhum veiculo disponivel no estoque para venda.\n");
-        return;
-    }
-
     char placa[20];
-    printf("\nDigite a Placa do veiculo a ser vendido: ");
+    printf("\nDigite a Placa do veiculo a vender: ");
     fgets(placa, sizeof(placa), stdin);
     placa[strcspn(placa, "\n")] = '\0';
 
-    int idxVeiculo = buscarVeiculo(*veiculos, *totalVeiculos, placa);
-    if (idxVeiculo == -1) {
-        printf("\nVeiculo nao encontrado no estoque!\n");
+    int idxV = buscarVeiculo(*veiculos, *totalVeiculos, placa);
+    if (idxV == -1) {
+        printf("[ERRO] Veiculo nao encontrado!\n");
         return;
     }
 
-    if ((*veiculos)[idxVeiculo].status != 0) {
-        printf("\nErro: Veiculo nao esta disponivel para venda. (Status: %s)\n", (*veiculos)[idxVeiculo].status == 1 ? "Alugado" : "Vendido");
+    if ((*veiculos)[idxV].status != 0) {
+        printf("[ERRO] Veiculo indisponivel! Status atual: %d\n", (*veiculos)[idxV].status);
         return;
     }
 
-    char buscaCliente[80];
+    char buscaC[80];
     printf("Digite o CPF ou Nome do comprador: ");
-    fgets(buscaCliente, sizeof(buscaCliente), stdin);
-    buscaCliente[strcspn(buscaCliente, "\n")] = '\0';
+    fgets(buscaC, sizeof(buscaC), stdin);
+    buscaC[strcspn(buscaC, "\n")] = '\0';
 
-    int idxCliente = buscarCliente(*clientes, *totalClientes, buscaCliente);
-    if (idxCliente == -1) {
-        int opcaoCliente;
-        printf("\nCliente nao encontrado.\n");
-        printf("1 - Cadastrar novo cliente\n");
-        printf("2 - Retornar ao menu\n");
-        printf("Opcao: ");
-        scanf("%d", &opcaoCliente);
-        limparBuffer();
-
-        if (opcaoCliente == 1) {
-            if (*totalClientes == *capClientes) {
-                *capClientes *= 2;
-                *clientes = (Cliente *) realloc(*clientes, *capClientes * sizeof(Cliente));
-            }
-            cadastrarCliente(&(*clientes)[*totalClientes]);
-            idxCliente = *totalClientes;
-            (*totalClientes)++;
-        } else {
-            printf("\nVenda cancelada. Retornando ao menu...\n");
-            return;
+    int idxC = buscarCliente(*clientes, *totalClientes, buscaC);
+    if (idxC == -1) {
+        printf("Cliente nao cadastrado. Redirecionando para cadastro...\n");
+        if (*totalClientes == *capClientes) {
+            *capClientes *= 2;
+            *clientes = (Cliente *) realloc(*clientes, *capClientes * sizeof(Cliente));
         }
+        cadastrarCliente(&(*clientes)[*totalClientes], *clientes, *totalClientes);
+        idxC = *totalClientes;
+        (*totalClientes)++;
     }
 
     if (*totalVendas == *capVendas) {
@@ -68,36 +47,99 @@ void realizarVenda(Veiculo **veiculos, int *totalVeiculos, Cliente **clientes, i
     }
 
     Venda v;
-    v.veiculo = (*veiculos)[idxVeiculo];
-    v.cliente = (*clientes)[idxCliente];
+    v.idVenda = (*totalVendas) + 1;
+    v.veiculo = (*veiculos)[idxV];
+    v.cliente = (*clientes)[idxC];
+    v.valorFinal = (*veiculos)[idxV].valor;
 
-    printf("Digite a data da venda (DD/MM/AAAA): ");
+    printf("Data da venda (DD/MM/AAAA): ");
     fgets(v.dataVenda, sizeof(v.dataVenda), stdin);
     v.dataVenda[strcspn(v.dataVenda, "\n")] = '\0';
 
     (*vendas)[*totalVendas] = v;
     (*totalVendas)++;
+    (*veiculos)[idxV].status = 2; // Vendido
 
-    // Atualiza status do veículo para Vendido (2) em vez de apagar do array base
-    (*veiculos)[idxVeiculo].status = 2;
-
-    printf("\n[SUCESSO] Venda realizada para %s!\n", v.cliente.nome);
+    printf("\n[SUCESSO] Venda #%d efetuada com sucesso!\n", v.idVenda);
 }
 
 void listarVendas(const Venda vendas[], int totalVendas) {
     if (totalVendas == 0) {
-        printf("\nNenhuma venda realizada ainda.\n");
+        printf("\nNenhuma venda realizada.\n");
         return;
     }
-    printf("\n=== Historico de Vendas Realizadas (%d) ===\n", totalVendas);
+    printf("\n=== Vendas Realizadas (%d) ===\n", totalVendas);
     for (int i = 0; i < totalVendas; i++) {
-        printf("\nVenda #%d | Data: %s\n", i + 1, vendas[i].dataVenda);
-        printf("  Veiculo Vendido: %s %s (%d) | Placa: %s | Valor: R$ %.2f\n", 
-               vendas[i].veiculo.marca, vendas[i].veiculo.modelo, vendas[i].veiculo.ano,
-               vendas[i].veiculo.placa, vendas[i].veiculo.valor);
-        printf("  Comprador: %s | CPF: %s | Tel: %s\n", 
-               vendas[i].cliente.nome, vendas[i].cliente.cpf, vendas[i].cliente.telefone);
+        printf("ID: %d | Data: %s | Veiculo: %s (%s) | Comprador: %s | Valor: R$%.2f\n",
+               vendas[i].idVenda, vendas[i].dataVenda, vendas[i].veiculo.modelo, 
+               vendas[i].veiculo.placa, vendas[i].cliente.nome, vendas[i].valorFinal);
     }
+}
+
+void procurarVendas(const Venda vendas[], int totalVendas, const Veiculo veiculos[], int totalVeiculos) {
+    int op;
+    printf("\n1 - Buscar Venda por Cliente (CPF/Nome)");
+    printf("\n2 - Buscar Venda por Veiculo (Placa)");
+    printf("\nOpcao: ");
+    scanf("%d", &op);
+    limparBuffer();
+
+    char termo[80];
+    printf("Digite o termo de busca: ");
+    fgets(termo, sizeof(termo), stdin);
+    termo[strcspn(termo, "\n")] = '\0';
+
+    for (int i = 0; i < totalVendas; i++) {
+        if ((op == 1 && (strstr(vendas[i].cliente.nome, termo) || strcmp(vendas[i].cliente.cpf, termo) == 0)) ||
+            (op == 2 && strcmp(vendas[i].veiculo.placa, termo) == 0)) {
+            printf("ID Venda: %d | Data: %s | Cliente: %s | Placa: %s | Valor: R$%.2f\n",
+                   vendas[i].idVenda, vendas[i].dataVenda, vendas[i].cliente.nome, 
+                   vendas[i].veiculo.placa, vendas[i].valorFinal);
+        }
+    }
+}
+
+void editarVenda(Venda *vendas, int totalVendas) {
+    int id;
+    printf("Digite o ID da venda a editar: ");
+    scanf("%d", &id);
+    limparBuffer();
+
+    for (int i = 0; i < totalVendas; i++) {
+        if (vendas[i].idVenda == id) {
+            printf("Novo Valor (Atual R$%.2f): ", vendas[i].valorFinal);
+            scanf("%f", &vendas[i].valorFinal);
+            limparBuffer();
+            printf("Nova Data (Atual %s): ", vendas[i].dataVenda);
+            fgets(vendas[i].dataVenda, sizeof(vendas[i].dataVenda), stdin);
+            vendas[i].dataVenda[strcspn(vendas[i].dataVenda, "\n")] = '\0';
+            printf("Venda atualizada com sucesso!\n");
+            return;
+        }
+    }
+    printf("ID de venda nao encontrado.\n");
+}
+
+void cancelarVenda(Venda **vendas, int *totalVendas, Veiculo **veiculos, int totalVeiculos) {
+    int id;
+    printf("Digite o ID da venda a cancelar/deletar: ");
+    scanf("%d", &id);
+    limparBuffer();
+
+    for (int i = 0; i < *totalVendas; i++) {
+        if ((*vendas)[i].idVenda == id) {
+            int idxV = buscarVeiculo(*veiculos, totalVeiculos, (*vendas)[i].veiculo.placa);
+            if (idxV != -1) (*veiculos)[idxV].status = 0; // Torna o veículo disponível novamente
+
+            for (int j = i; j < *totalVendas - 1; j++) {
+                (*vendas)[j] = (*vendas)[j + 1];
+            }
+            (*totalVendas)--;
+            printf("Venda cancelada e veiculo retornado ao estoque!\n");
+            return;
+        }
+    }
+    printf("Venda nao encontrada.\n");
 }
 
 void menuVendas(Veiculo **veiculos, int *totalVeiculos, Cliente **clientes, int *totalClientes, int *capClientes, Venda **vendas, int *totalVendas, int *capVendas) {
@@ -108,16 +150,19 @@ void menuVendas(Veiculo **veiculos, int *totalVeiculos, Cliente **clientes, int 
         printf("\n====================================");
         printf("\n| 1 - Realizar Nova Venda           |");
         printf("\n| 2 - Historico de Vendas           |");
+        printf("\n| 3 - Procurar Vendas               |");
+        printf("\n| 4 - Editar Venda (Valor/Data)     |");
+        printf("\n| 5 - Cancelar/Deletar Venda        |");
         printf("\n| 0 - Voltar ao Menu Principal      |");
         printf("\n====================================");
         printf("\nOpcao: ");
         scanf("%d", &opcao);
         limparBuffer();
 
-        if (opcao == 1) {
-            realizarVenda(veiculos, totalVeiculos, clientes, totalClientes, capClientes, vendas, totalVendas, capVendas);
-        } else if (opcao == 2) {
-            listarVendas(*vendas, *totalVendas);
-        }
+        if (opcao == 1) realizarVenda(veiculos, totalVeiculos, clientes, totalClientes, capClientes, vendas, totalVendas, capVendas);
+        else if (opcao == 2) listarVendas(*vendas, *totalVendas);
+        else if (opcao == 3) procurarVendas(*vendas, *totalVendas, *veiculos, *totalVeiculos);
+        else if (opcao == 4) editarVenda(*vendas, *totalVendas);
+        else if (opcao == 5) cancelarVenda(vendas, totalVendas, veiculos, *totalVeiculos);
     } while (opcao != 0);
 }

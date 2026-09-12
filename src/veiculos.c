@@ -227,6 +227,13 @@ void editarVeiculo(Veiculo *v) {
 }
 
 void apagarVeiculo(Veiculo **veiculos, int *total, int *cap, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes) {
+    /* ALTERACAO: estes argumentos fazem parte da interface do modulo, mas a
+       regra atual de exclusao ainda nao consulta vendas ou locacoes. */
+    (void)vendas;
+    (void)totalVendas;
+    (void)locacoes;
+    (void)totalLocacoes;
+
     char placa[20];
     printf("Digite a Placa do veiculo a remover: ");
     lerLinha(placa, sizeof(placa));

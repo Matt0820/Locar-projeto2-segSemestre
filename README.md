@@ -1,43 +1,156 @@
-# Locar — Sistema de Gestão para Concessionária/Locadora de Veículos
+# Locar — Sistema de Gestão para Concessionária e Locadora de Veículos
 
-Sistema de linha de comando (CLI) em **C**, desenvolvido para o segundo semestre da disciplina, para gerenciar o dia a dia de uma concessionária que também trabalha com locação de veículos: cadastro de clientes e veículos, vendas (à vista ou financiadas), locações, manutenção e relatórios financeiros — tudo com persistência em arquivos CSV.
+O **Locar** é um sistema de gestão desenvolvido em **linguagem C**, com funcionamento por meio de uma **interface de linha de comando (CLI, Command Line Interface)**. O projeto foi desenvolvido como parte das atividades do segundo semestre da disciplina: **Desenvolvimento de Sistemas em Linguagem C**, tendo como objetivo representar, de forma organizada, as principais operações realizadas no cotidiano de uma concessionária que também atua no segmento de locação de veículos.
+
+O sistema permite realizar o cadastro e o gerenciamento de clientes e veículos, registrar vendas à vista ou financiadas, controlar locações, acompanhar manutenções e consultar informações financeiras da empresa.
+
+Para garantir a continuidade das informações entre diferentes execuções do programa, os dados são armazenados em arquivos **CSV (dados organizados em campos delimitados)**. Dessa forma, o sistema não depende exclusivamente da memória do computador para manter os registros realizados pelo usuário.
 
 ## Funcionalidades
 
 ### Clientes
-- Cadastro com validação de **CPF** (dígitos verificadores reais), **CNH** (11 dígitos, sem duplicidade), nome (somente letras), telefone, e-mail, CEP, UF e data de nascimento (idade mínima de 18 anos).
-- O ano de nascimento não é mais perguntado separadamente: é derivado automaticamente da Data de Nascimento informada.
-- Busca por nome ou CPF, edição, listagem e remoção (bloqueada se o cliente tiver vendas ou locações associadas).
+
+O módulo de clientes é responsável pelo cadastro, consulta, alteração e remoção das informações dos clientes.
+
+Durante o cadastro, são realizadas validações para garantir a consistência dos dados informados, incluindo:
+
+* **CPF**, com verificação dos dígitos verificadores e prevenção de duplicidade;
+* **CNH**, composta por 11 dígitos numéricos e sem duplicidade;
+* Nome, permitindo somente letras;
+* Telefone;
+* E-mail;
+* CEP;
+* Unidade Federativa (UF);
+* Data de nascimento, considerando idade mínima de 18 anos.
+
+O ano de nascimento não é solicitado separadamente, pois é obtido automaticamente a partir da **Data de Nascimento** informada pelo usuário.
+
+O sistema também disponibiliza:
+
+* Busca de clientes por nome ou CPF;
+* Edição dos dados cadastrados;
+* Listagem dos clientes;
+* Remoção de clientes.
+
+A remoção de um cliente é bloqueada quando existem vendas ou locações associadas ao seu cadastro, preservando a relação entre os registros existentes no sistema.
 
 ### Veículos
-- Cadastro com validação de placa, ano de fabricação e valores.
-- O **valor de venda não é mais definido no cadastro** — ele é negociado no momento da venda.
-- **Cálculo de depreciação**: o "valor de mercado" exibido nas listagens é estimado automaticamente a partir do valor de compra e da idade do veículo (10% ao ano, com piso de 30% do valor pago).
-- Busca por modelo, marca, placa ou faixa de valor.
+
+O módulo de veículos permite cadastrar e consultar os veículos disponíveis no sistema, realizando validações sobre suas principais informações.
+
+Entre os dados considerados estão:
+
+* Placa;
+* Ano de fabricação;
+* Valor de compra;
+* Demais valores relacionados ao veículo.
+
+O **valor de venda não é definido durante o cadastro do veículo**. Esse valor é estabelecido posteriormente, no momento em que a venda é registrada, permitindo que o preço seja definido de acordo com a negociação realizada.
+
+O sistema também realiza um **cálculo de depreciação**, utilizado para estimar o valor de mercado do veículo. Essa estimativa considera:
+
+* O valor de compra do veículo;
+* A idade do veículo;
+* Uma redução de 10% ao ano;
+* Um limite mínimo correspondente a 30% do valor originalmente pago.
+
+O valor de mercado calculado é apresentado nas listagens e utilizado como referência para a composição das informações financeiras do estoque.
+
+Também é possível realizar buscas de veículos por:
+
+* Modelo;
+* Marca;
+* Placa;
+* Faixa de valor.
 
 ### Vendas
-- Se o CPF informado não pertence a um cliente cadastrado, o sistema pergunta se deseja cadastrar um novo cliente ali mesmo ou voltar ao menu (a venda é cancelada nesse caso).
-- **Forma de pagamento**: à vista ou financiado.
-  - No financiamento, são oferecidas as opções de **12, 24, 36, 48 ou 60 parcelas**, cada uma já exibida com o valor da parcela e o status `[APROVADO]`/`[REPROVADO]`.
-  - O financiamento só é aprovado se a parcela não ultrapassar **30% da renda mensal do cliente**. Se nenhuma opção couber no orçamento, é possível cancelar o financiamento e prosseguir com a venda à vista.
+
+O módulo de vendas permite registrar a comercialização dos veículos cadastrados no sistema.
+
+Quando o CPF informado durante uma venda não pertence a um cliente cadastrado, o sistema oferece a possibilidade de realizar o cadastro do cliente naquele momento. Caso o usuário opte por não realizar o cadastro, é possível retornar ao menu e cancelar a operação de venda.
+
+As vendas podem ser realizadas nas seguintes modalidades:
+
+* **À vista**;
+* **Financiada**.
+
+No caso de financiamento, são apresentadas as seguintes opções de parcelamento:
+
+* 12 parcelas;
+* 24 parcelas;
+* 36 parcelas;
+* 48 parcelas;
+* 60 parcelas.
+
+Cada opção apresenta previamente o valor estimado da parcela e sua situação, indicada pelos estados `[APROVADO]` ou `[REPROVADO]`.
+
+Para que uma opção de financiamento seja aprovada, o valor da parcela não pode ultrapassar **30% da renda mensal do cliente**.
+
+Caso nenhuma das opções disponíveis seja compatível com a renda informada, o usuário pode cancelar o financiamento e prosseguir com a venda na modalidade à vista.
 
 ### Locações
-- Mesmo fluxo de confirmação de cadastro de cliente usado nas vendas (cadastrar agora ou cancelar a locação).
-- Início, extensão, finalização (com quilometragem final, taxas de avaria/multa e forma de pagamento) e histórico.
+
+O módulo de locações permite controlar o processo de aluguel dos veículos, desde seu início até sua finalização.
+
+O processo de identificação do cliente segue a mesma lógica utilizada nas vendas. Caso o CPF informado não esteja cadastrado, o sistema permite realizar o cadastro do cliente no próprio fluxo da locação ou cancelar a operação.
+
+São contempladas as seguintes operações:
+
+* Início de uma locação;
+* Extensão de uma locação existente;
+* Finalização da locação;
+* Registro da quilometragem final;
+* Aplicação de taxas relacionadas a avarias ou multas;
+* Definição da forma de pagamento;
+* Consulta ao histórico de locações.
 
 ### Manutenção
-- Registro e finalização de manutenções, bloqueando o veículo para vendas/locações enquanto estiver "Em Manutenção".
+
+O módulo de manutenção permite registrar e finalizar serviços realizados nos veículos.
+
+Quando um veículo se encontra com uma manutenção em andamento, seu estado é alterado para **"Em Manutenção"**. Nessa situação, o veículo fica temporariamente indisponível para novas vendas ou locações.
+
+Após a finalização da manutenção, o veículo pode voltar a ser utilizado nas demais operações do sistema.
 
 ### Relatórios
-- Resumo financeiro geral (investimento, faturamento, lucro/prejuízo, valor de mercado do estoque).
-- Vendas por período, veículos vendidos, despesas com manutenção.
-- **Exportação para TXT**: gera `data/relatorio.txt`, um relatório completo e formatado (resumo financeiro, estoque, vendas, locações e manutenções) pronto para impressão ou envio.
+
+O módulo de relatórios apresenta informações consolidadas sobre as atividades da concessionária e locadora.
+
+Entre os dados disponibilizados estão:
+
+* Investimento realizado;
+* Faturamento;
+* Lucro ou prejuízo;
+* Valor de mercado do estoque;
+* Vendas realizadas em determinado período;
+* Veículos vendidos;
+* Despesas relacionadas às manutenções.
+
+Além da apresentação das informações na tela, o sistema possui uma função de **exportação para TXT (arquivo de texto simples)**.
+
+Quando solicitada, essa função gera o arquivo:
+
+```text
+data/relatorio.txt
+```
+
+O relatório contém, de forma organizada e adequada para impressão ou envio, informações referentes a:
+
+* Resumo financeiro;
+* Estoque;
+* Vendas;
+* Locações;
+* Manutenções.
 
 ## Persistência de dados
 
-Todos os dados são salvos automaticamente em arquivos `.csv` dentro da pasta `data/`:
+A **persistência de dados** corresponde ao armazenamento das informações para que elas permaneçam disponíveis mesmo após o encerramento do programa.
 
-```
+No Locar, os dados são armazenados automaticamente em arquivos `.csv` localizados na pasta `data/`.
+
+A estrutura utilizada é:
+
+```text
 data/
 ├── clientes.csv
 ├── veiculos.csv
@@ -47,64 +160,109 @@ data/
 └── relatorio.txt   (gerado sob demanda pelo menu Relatórios)
 ```
 
-Os dados são carregados automaticamente ao abrir o programa e salvos a cada retorno ao menu principal, além de um salvamento final ao sair — não é necessário fazer nada manualmente para não perder o progresso.
+Os arquivos `.csv` são utilizados para armazenar os registros dos diferentes módulos do sistema, enquanto o arquivo `relatorio.txt` é criado somente quando a exportação de relatório é solicitada.
+
+Ao iniciar o programa, os dados existentes são carregados automaticamente. Durante a utilização do sistema, as informações são salvas a cada retorno ao menu principal e também é realizado um salvamento final no momento do encerramento.
+
+Dessa forma, não é necessário realizar procedimentos manuais para preservar o progresso das operações realizadas.
 
 ## Estrutura do projeto
 
-```
+## Ajustes de legibilidade e manutencao
+
+Esta versao preserva as funcionalidades e regras de negocio originais do projeto.
+Foram aplicados somente ajustes estruturais necessarios para que a organizacao
+proposta no arquivo principal funcione corretamente:
+
+* O estado do sistema permanece reunido em `ConcessionariaDB`, evitando que o
+  menu principal manipule diversos vetores e contadores diretamente.
+* Foram criadas funcoes internas de adaptacao para carregar, salvar e encaminhar
+  os dados aos modulos. Assim, os modulos existentes nao precisaram ser
+  reescritos nem tiveram suas regras alteradas.
+* A alocacao inicial passou a liberar a memoria ja reservada se alguma das
+  alocacoes falhar.
+* O menu principal agora identifica uma opcao nao numerica e retorna ao menu,
+  sem repetir a leitura indefinidamente.
+
+Os comentarios marcados como `ALTERACAO` no arquivo `main.c` indicam a relacao
+entre o codigo anterior e o comportamento refatorado.
+
+O projeto foi organizado em diferentes arquivos e módulos, de modo que cada parte do sistema possua uma responsabilidade específica. Essa organização facilita a manutenção e a compreensão do código.
+
+```text
 .
 ├── main.c                 # Ponto de entrada e menu principal
-├── include/                # Cabeçalhos (.h) de cada módulo
+├── include/               # Arquivos de cabeçalho (.h) dos módulos
 ├── src/
-│   ├── clientes.c          # Cadastro, edição, busca e remoção de clientes
-│   ├── veiculos.c          # Cadastro de veículos e cálculo de depreciação
-│   ├── vendas.c             # Vendas à vista/financiadas
-│   ├── locacoes.c           # Locações de veículos
-│   ├── manutencao.c         # Controle de manutenções
-│   ├── relatorios.c         # Relatórios em tela e exportação em TXT
-│   └── util.c                # Funções compartilhadas: validações, leitura de
-│                                entrada e utilitários de arquivo
+│   ├── clientes.c         # Cadastro, edição, busca e remoção de clientes
+│   ├── veiculos.c         # Cadastro de veículos e cálculo de depreciação
+│   ├── vendas.c           # Vendas à vista e financiadas
+│   ├── locacoes.c         # Controle das locações de veículos
+│   ├── manutencao.c       # Controle das manutenções
+│   ├── relatorios.c       # Relatórios em tela e exportação em TXT
+│   └── util.c             # Funções compartilhadas, validações, leitura de
+│                           # entradas e operações auxiliares com arquivos
 ├── data/
-│   └── dados.c              # Leitura e escrita dos arquivos CSV
+│   └── dados.c            # Leitura e escrita dos arquivos CSV
 └── CMakeLists.txt
 ```
 
+O arquivo `main.c` concentra o ponto de entrada do programa e a apresentação do menu principal. Os demais arquivos são distribuídos de acordo com a área de responsabilidade correspondente.
+
+Os arquivos `.h`, localizados na pasta `include/`, contêm as declarações necessárias para que os diferentes módulos possam utilizar funções e estruturas definidas em outros arquivos.
+
 ## Como compilar
 
-### Com CMake
+O projeto pode ser compilado utilizando o **CMake**, uma ferramenta utilizada para configurar e automatizar o processo de compilação, ou diretamente por meio do **GCC**, compilador utilizado para programas escritos em C.
+
+### Compilação com CMake
+
 ```bash
 mkdir build && cd build
 cmake ..
 cmake --build .
 ```
 
-### Com GCC diretamente
+### Compilação diretamente com GCC
+
 ```bash
 gcc -std=c99 -Wall -Wextra -Iinclude -o Locar \
     main.c src/clientes.c src/locacoes.c src/relatorios.c \
     src/veiculos.c src/vendas.c src/util.c data/dados.c src/manutencao.c
 ```
 
-O executável deve ser rodado a partir da raiz do projeto (ou de uma pasta onde ele tenha permissão de criar a subpasta `data/`), para que a persistência funcione corretamente.
+O executável deve ser iniciado a partir da raiz do projeto ou de uma pasta na qual possua permissão para criar e utilizar a subpasta `data/`.
+
+Essa condição é necessária para que os arquivos responsáveis pelo armazenamento dos dados possam ser encontrados e atualizados corretamente.
 
 ## Validações implementadas
 
-| Campo | Regra |
-|---|---|
-| CPF | 11 dígitos com dígitos verificadores válidos, sem duplicidade |
-| CNH | 11 dígitos numéricos, sem duplicidade |
-| Nome / Estado Civil / Profissão / Cidade | Somente letras e espaços |
-| Datas | Formato `DD/MM/AAAA`, com dia/mês/ano coerentes (incluindo anos bissextos) |
-| Data de Nascimento | Cliente deve ter no mínimo 18 anos |
-| Telefone | 10 ou 11 dígitos numéricos (com DDD) |
-| E-mail | Formato `usuario@dominio.extensao` |
-| CEP | 8 dígitos numéricos |
-| UF | 2 letras |
-| Placa | 7 caracteres alfanuméricos |
-| Valores monetários / quilometragem / dias | Sempre maiores que zero (ou não negativos, conforme o campo) |
+O sistema realiza validações nos principais dados fornecidos pelo usuário, buscando reduzir inconsistências nos registros armazenados.
+
+| Campo                                     | Regra                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| CPF                                       | 11 dígitos, com dígitos verificadores válidos e sem duplicidade              |
+| CNH                                       | 11 dígitos numéricos e sem duplicidade                                       |
+| Nome / Estado Civil / Profissão / Cidade  | Somente letras e espaços                                                     |
+| Datas                                     | Formato `DD/MM/AAAA`, com dia, mês e ano coerentes, incluindo anos bissextos |
+| Data de Nascimento                        | O cliente deve possuir no mínimo 18 anos                                     |
+| Telefone                                  | 10 ou 11 dígitos numéricos, incluindo o DDD                                  |
+| E-mail                                    | Formato `usuario@dominio.extensao`                                           |
+| CEP                                       | 8 dígitos numéricos                                                          |
+| UF                                        | 2 letras                                                                     |
+| Placa                                     | 7 caracteres alfanuméricos                                                   |
+| Valores monetários / quilometragem / dias | Valores maiores que zero ou não negativos, conforme a finalidade do campo    |
+
+Essas validações são realizadas antes que os dados sejam efetivamente registrados, contribuindo para a integridade das informações utilizadas pelas demais funcionalidades do sistema.
 
 ## Observações técnicas
 
-- O parser de CSV foi escrito manualmente (em vez de `sscanf` com `%[^;]`) para lidar corretamente com campos vazios (como um "Complemento" em branco), que quebrariam a leitura dos campos seguintes.
-- Novos campos (como CNH e forma de pagamento) são sempre adicionados ao final de cada linha do CSV, para manter compatibilidade com arquivos salvos por versões anteriores.
-- O ';' é o delimitador dos arquivos CSV — caso o usuário digite um ';' em algum campo de texto, ele é automaticamente substituído por espaço para não corromper o arquivo.
+Algumas decisões foram adotadas durante o desenvolvimento para garantir o funcionamento adequado do armazenamento e da leitura dos dados.
+
+* O mecanismo de leitura dos arquivos CSV foi desenvolvido manualmente, em vez da utilização direta de `sscanf` com o formato `%[^;]`. Essa decisão permite tratar corretamente campos vazios, como um campo de "Complemento" que não tenha sido preenchido, evitando que os valores dos campos seguintes sejam interpretados de forma incorreta.
+
+* Novos campos, como **CNH** e **forma de pagamento**, são adicionados ao final de cada linha dos arquivos CSV. Essa estratégia busca manter a compatibilidade com arquivos que tenham sido armazenados por versões anteriores do sistema.
+
+* O caractere `;` é utilizado como delimitador nos arquivos CSV. Dessa forma, caso o usuário informe esse caractere em algum campo de texto, ele é automaticamente substituído por um espaço, evitando que a estrutura dos arquivos seja comprometida.
+
+Essas decisões fazem parte da organização interna do sistema e foram adotadas com o objetivo de preservar a consistência dos dados, facilitar sua manutenção e permitir a evolução do projeto sem comprometer os registros já existentes.

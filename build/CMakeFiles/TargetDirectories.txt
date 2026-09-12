@@ -1,3 +1,0 @@
-C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/Locar.dir
-C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/edit_cache.dir
-C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/rebuild_cache.dir

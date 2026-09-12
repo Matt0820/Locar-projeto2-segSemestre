@@ -211,6 +211,11 @@ void listarVendas(const Venda vendas[], int totalVendas) {
 }
 
 void procurarVendas(const Venda vendas[], int totalVendas, const Veiculo veiculos[], int totalVeiculos) {
+    /* ALTERACAO: a busca utiliza os dados gravados dentro de cada venda.
+       Os parametros de veiculos foram mantidos para preservar a interface. */
+    (void)veiculos;
+    (void)totalVeiculos;
+
     int op;
     printf("\n1 - Buscar Venda por Cliente (CPF/Nome)");
     printf("\n2 - Buscar Venda por Veiculo (Placa)");

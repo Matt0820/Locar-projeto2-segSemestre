@@ -3,6 +3,14 @@
 #include <string.h>
 #include "../include/modelos.h"
 #include "../include/dados.h"
+#include "../include/util.h"
+
+// Todos os arquivos CSV do sistema sao gravados e lidos dentro da pasta "data".
+#define CAMINHO_CLIENTES     "data/clientes.csv"
+#define CAMINHO_VEICULOS     "data/veiculos.csv"
+#define CAMINHO_VENDAS       "data/vendas.csv"
+#define CAMINHO_LOCACOES     "data/locacoes.csv"
+#define CAMINHO_MANUTENCOES  "data/manutencoes.csv"
 
 void salvarDadosCSV(const Cliente clientes[], int totalClientes,
                     const Veiculo veiculos[], int totalVeiculos,
@@ -12,23 +20,25 @@ void salvarDadosCSV(const Cliente clientes[], int totalClientes,
 
     FILE *f;
 
+    criarPastaDados(); // garante que a pasta "data" exista antes de gravar
+
     // 1. Salvar Clientes
-    f = fopen("clientes.csv", "w");
+    f = fopen(CAMINHO_CLIENTES, "w");
     if (f) {
         for (int i = 0; i < totalClientes; i++) {
-            fprintf(f, "%s;%s;%s;%d;%s;%s;%s;%f;%s;%s;%d;%s;%s;%s;%s;%s\n",
+            fprintf(f, "%s;%s;%s;%d;%s;%s;%s;%f;%s;%s;%d;%s;%s;%s;%s;%s;%s\n",
                     clientes[i].nome, clientes[i].cpf, clientes[i].dataNascimento,
                     clientes[i].anoNascimento, clientes[i].estadoCivil, clientes[i].telefone,
                     clientes[i].email, clientes[i].rendaMensal, clientes[i].profissao,
                     clientes[i].endereco.rua, clientes[i].endereco.numero, clientes[i].endereco.complemento,
                     clientes[i].endereco.bairro, clientes[i].endereco.cidade, clientes[i].endereco.uf,
-                    clientes[i].endereco.cep);
+                    clientes[i].endereco.cep, clientes[i].cnh);
         }
         fclose(f);
     }
 
     // 2. Salvar Veiculos
-    f = fopen("veiculos.csv", "w");
+    f = fopen(CAMINHO_VEICULOS, "w");
     if (f) {
         for (int i = 0; i < totalVeiculos; i++) {
             fprintf(f, "%s;%s;%d;%s;%f;%f;%d;%f;%d\n",
@@ -40,18 +50,19 @@ void salvarDadosCSV(const Cliente clientes[], int totalClientes,
     }
 
     // 3. Salvar Vendas
-    f = fopen("vendas.csv", "w");
+    f = fopen(CAMINHO_VENDAS, "w");
     if (f) {
         for (int i = 0; i < totalVendas; i++) {
-            fprintf(f, "%d;%s;%s;%s;%f\n",
+            fprintf(f, "%d;%s;%s;%s;%f;%d;%d;%f\n",
                     vendas[i].idVenda, vendas[i].veiculo.placa,
-                    vendas[i].cliente.cpf, vendas[i].dataVenda, vendas[i].valorFinal);
+                    vendas[i].cliente.cpf, vendas[i].dataVenda, vendas[i].valorFinal,
+                    vendas[i].formaPagamento, vendas[i].numParcelas, vendas[i].valorParcela);
         }
         fclose(f);
     }
 
     // 4. Salvar Locacoes
-    f = fopen("locacoes.csv", "w");
+    f = fopen(CAMINHO_LOCACOES, "w");
     if (f) {
         for (int i = 0; i < totalLocacoes; i++) {
             fprintf(f, "%d;%s;%s;%s;%d;%d;%d;%d;%f;%f;%f;%d;%d\n",
@@ -65,7 +76,7 @@ void salvarDadosCSV(const Cliente clientes[], int totalClientes,
     }
 
     // 5. Salvar Manutencoes
-    f = fopen("manutencoes.csv", "w");
+    f = fopen(CAMINHO_MANUTENCOES, "w");
     if (f) {
         for (int i = 0; i < totalManutencoes; i++) {
             fprintf(f, "%d;%s;%s;%s;%s;%f;%d\n",
@@ -76,7 +87,39 @@ void salvarDadosCSV(const Cliente clientes[], int totalClientes,
         fclose(f);
     }
 
-    printf("\n[DADOS GRAVADOS COM SUCESSO NOS ARQUIVOS CSV!]\n");
+    printf("\n[DADOS GRAVADOS COM SUCESSO NA PASTA data/!]\n");
+}
+
+// Divide "linha" em ponteiros de campos separados por ';'.
+static int dividirCampos(char *linha, char *campos[], int maxCampos) {
+    int qtd = 0;
+    linha[strcspn(linha, "\r\n")] = '\0';
+
+    char *inicio = linha;
+    while (qtd < maxCampos) {
+        campos[qtd++] = inicio;
+        char *sep = strchr(inicio, ';');
+        if (sep == NULL) break;
+        *sep = '\0';
+        inicio = sep + 1;
+    }
+    return qtd;
+}
+
+static void campoTexto(char *destino, size_t tamanho, int indice, char *campos[], int totalCampos) {
+    if (indice < totalCampos) {
+        snprintf(destino, tamanho, "%s", campos[indice]);
+    } else {
+        destino[0] = '\0';
+    }
+}
+
+static int campoInt(int indice, char *campos[], int totalCampos, int padrao) {
+    return (indice < totalCampos) ? atoi(campos[indice]) : padrao;
+}
+
+static float campoFloat(int indice, char *campos[], int totalCampos, float padrao) {
+    return (indice < totalCampos) ? (float) atof(campos[indice]) : padrao;
 }
 
 void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
@@ -87,20 +130,41 @@ void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
 
     FILE *f;
     char linha[512];
+    char *campos[20];
+    int n;
 
     // 1. Carregar Clientes
-    f = fopen("clientes.csv", "r");
+    // Ordem: nome;cpf;dataNascimento;anoNascimento;estadoCivil;telefone;email;rendaMensal;profissao;rua;numero;complemento;bairro;cidade;uf;cep;cnh
+    f = fopen(CAMINHO_CLIENTES, "r");
     if (f) {
         while (fgets(linha, sizeof(linha), f)) {
+            if (linha[0] == '\0' || linha[0] == '\n' || linha[0] == '\r') continue;
             if (*totalClientes == *capClientes) {
                 *capClientes *= 2;
                 *clientes = (Cliente *) realloc(*clientes, *capClientes * sizeof(Cliente));
             }
+            n = dividirCampos(linha, campos, 20);
+
             Cliente c;
-            sscanf(linha, "%79[^;];%19[^;];%19[^;];%d;%29[^;];%19[^;];%59[^;];%f;%49[^;];%59[^;];%d;%29[^;];%39[^;];%39[^;];%9[^;];%19[^\n]",
-                   c.nome, c.cpf, c.dataNascimento, &c.anoNascimento, c.estadoCivil, c.telefone,
-                   c.email, &c.rendaMensal, c.profissao, c.endereco.rua, &c.endereco.numero,
-                   c.endereco.complemento, c.endereco.bairro, c.endereco.cidade, c.endereco.uf, c.endereco.cep);
+            memset(&c, 0, sizeof(Cliente));
+            campoTexto(c.nome, sizeof(c.nome), 0, campos, n);
+            campoTexto(c.cpf, sizeof(c.cpf), 1, campos, n);
+            campoTexto(c.dataNascimento, sizeof(c.dataNascimento), 2, campos, n);
+            c.anoNascimento = campoInt(3, campos, n, 0);
+            campoTexto(c.estadoCivil, sizeof(c.estadoCivil), 4, campos, n);
+            campoTexto(c.telefone, sizeof(c.telefone), 5, campos, n);
+            campoTexto(c.email, sizeof(c.email), 6, campos, n);
+            c.rendaMensal = campoFloat(7, campos, n, 0.0f);
+            campoTexto(c.profissao, sizeof(c.profissao), 8, campos, n);
+            campoTexto(c.endereco.rua, sizeof(c.endereco.rua), 9, campos, n);
+            c.endereco.numero = campoInt(10, campos, n, 0);
+            campoTexto(c.endereco.complemento, sizeof(c.endereco.complemento), 11, campos, n);
+            campoTexto(c.endereco.bairro, sizeof(c.endereco.bairro), 12, campos, n);
+            campoTexto(c.endereco.cidade, sizeof(c.endereco.cidade), 13, campos, n);
+            campoTexto(c.endereco.uf, sizeof(c.endereco.uf), 14, campos, n);
+            campoTexto(c.endereco.cep, sizeof(c.endereco.cep), 15, campos, n);
+            campoTexto(c.cnh, sizeof(c.cnh), 16, campos, n);
+
             (*clientes)[*totalClientes] = c;
             (*totalClientes)++;
         }
@@ -108,17 +172,29 @@ void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
     }
 
     // 2. Carregar Veiculos
-    f = fopen("veiculos.csv", "r");
+    // Ordem: marca;modelo;ano;placa;valor;valorCompra;km;valorDiaria;status
+    f = fopen(CAMINHO_VEICULOS, "r");
     if (f) {
         while (fgets(linha, sizeof(linha), f)) {
+            if (linha[0] == '\0' || linha[0] == '\n' || linha[0] == '\r') continue;
             if (*totalVeiculos == *capVeiculos) {
                 *capVeiculos *= 2;
                 *veiculos = (Veiculo *) realloc(*veiculos, *capVeiculos * sizeof(Veiculo));
             }
+            n = dividirCampos(linha, campos, 20);
+
             Veiculo v;
-            sscanf(linha, "%49[^;];%49[^;];%d;%19[^;];%f;%f;%d;%f;%d",
-                   v.marca, v.modelo, &v.ano, v.placa, &v.valor, &v.valorCompra,
-                   &v.km, &v.valorDiaria, &v.status);
+            memset(&v, 0, sizeof(Veiculo));
+            campoTexto(v.marca, sizeof(v.marca), 0, campos, n);
+            campoTexto(v.modelo, sizeof(v.modelo), 1, campos, n);
+            v.ano = campoInt(2, campos, n, 0);
+            campoTexto(v.placa, sizeof(v.placa), 3, campos, n);
+            v.valor = campoFloat(4, campos, n, 0.0f);
+            v.valorCompra = campoFloat(5, campos, n, 0.0f);
+            v.km = campoInt(6, campos, n, 0);
+            v.valorDiaria = campoFloat(7, campos, n, 0.0f);
+            v.status = campoInt(8, campos, n, 0);
+
             (*veiculos)[*totalVeiculos] = v;
             (*totalVeiculos)++;
         }
@@ -126,16 +202,42 @@ void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
     }
 
     // 3. Carregar Vendas
-    f = fopen("vendas.csv", "r");
+    // Ordem: idVenda;placaVeiculo;cpfCliente;dataVenda;valorFinal;formaPagamento;numParcelas;valorParcela.
+    f = fopen(CAMINHO_VENDAS, "r");
     if (f) {
         while (fgets(linha, sizeof(linha), f)) {
+            if (linha[0] == '\0' || linha[0] == '\n' || linha[0] == '\r') continue;
             if (*totalVendas == *capVendas) {
                 *capVendas *= 2;
                 *vendas = (Venda *) realloc(*vendas, *capVendas * sizeof(Venda));
             }
+            n = dividirCampos(linha, campos, 20);
+
             Venda vd;
-            sscanf(linha, "%d;%19[^;];%19[^;];%19[^;];%f",
-                   &vd.idVenda, vd.veiculo.placa, vd.cliente.cpf, vd.dataVenda, &vd.valorFinal);
+            memset(&vd, 0, sizeof(Venda));
+            vd.idVenda = campoInt(0, campos, n, 0);
+            campoTexto(vd.veiculo.placa, sizeof(vd.veiculo.placa), 1, campos, n);
+            campoTexto(vd.cliente.cpf, sizeof(vd.cliente.cpf), 2, campos, n);
+            campoTexto(vd.dataVenda, sizeof(vd.dataVenda), 3, campos, n);
+            vd.valorFinal = campoFloat(4, campos, n, 0.0f);
+            vd.formaPagamento = campoInt(5, campos, n, 1);
+            vd.numParcelas = campoInt(6, campos, n, 0);
+            vd.valorParcela = campoFloat(7, campos, n, 0.0f);
+
+            for (int j = 0; j < *totalClientes; j++) {
+                if (strcmp((*clientes)[j].cpf, vd.cliente.cpf) == 0) {
+                    vd.cliente = (*clientes)[j];
+                    break;
+                }
+            }
+            for (int j = 0; j < *totalVeiculos; j++) {
+                if (strcmp((*veiculos)[j].placa, vd.veiculo.placa) == 0) {
+                    vd.veiculo = (*veiculos)[j];
+                    break;
+                }
+            }
+            vd.veiculo.valor = vd.valorFinal;
+
             (*vendas)[*totalVendas] = vd;
             (*totalVendas)++;
         }
@@ -143,18 +245,33 @@ void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
     }
 
     // 4. Carregar Locacoes
-    f = fopen("locacoes.csv", "r");
+    // Ordem: idLocacao;placaVeiculo;cpfCliente;dataInicio;diasPrevistos;diasUtilizados;kmInicial;kmFinal;valorDiaria;taxaAvariaMulta;valorTotal;formaPagamento;status
+    f = fopen(CAMINHO_LOCACOES, "r");
     if (f) {
         while (fgets(linha, sizeof(linha), f)) {
+            if (linha[0] == '\0' || linha[0] == '\n' || linha[0] == '\r') continue;
             if (*totalLocacoes == *capLocacoes) {
                 *capLocacoes *= 2;
                 *locacoes = (Locacao *) realloc(*locacoes, *capLocacoes * sizeof(Locacao));
             }
+            n = dividirCampos(linha, campos, 20);
+
             Locacao l;
-            sscanf(linha, "%d;%19[^;];%19[^;];%19[^;];%d;%d;%d;%d;%f;%f;%f;%d;%d",
-                   &l.idLocacao, l.placaVeiculo, l.cpfCliente, l.dataInicio, &l.diasPrevistos,
-                   &l.diasUtilizados, &l.kmInicial, &l.kmFinal, &l.valorDiaria, &l.taxaAvariaMulta,
-                   &l.valorTotal, &l.formaPagamento, &l.status);
+            memset(&l, 0, sizeof(Locacao));
+            l.idLocacao = campoInt(0, campos, n, 0);
+            campoTexto(l.placaVeiculo, sizeof(l.placaVeiculo), 1, campos, n);
+            campoTexto(l.cpfCliente, sizeof(l.cpfCliente), 2, campos, n);
+            campoTexto(l.dataInicio, sizeof(l.dataInicio), 3, campos, n);
+            l.diasPrevistos = campoInt(4, campos, n, 0);
+            l.diasUtilizados = campoInt(5, campos, n, 0);
+            l.kmInicial = campoInt(6, campos, n, 0);
+            l.kmFinal = campoInt(7, campos, n, 0);
+            l.valorDiaria = campoFloat(8, campos, n, 0.0f);
+            l.taxaAvariaMulta = campoFloat(9, campos, n, 0.0f);
+            l.valorTotal = campoFloat(10, campos, n, 0.0f);
+            l.formaPagamento = campoInt(11, campos, n, 0);
+            l.status = campoInt(12, campos, n, 0);
+
             (*locacoes)[*totalLocacoes] = l;
             (*totalLocacoes)++;
         }
@@ -162,17 +279,27 @@ void carregarDadosCSV(Cliente **clientes, int *totalClientes, int *capClientes,
     }
 
     // 5. Carregar Manutencoes
-    f = fopen("manutencoes.csv", "r");
+    // Ordem: idManutencao;placaVeiculo;descricao;dataEntrada;dataSaida;custo;status
+    f = fopen(CAMINHO_MANUTENCOES, "r");
     if (f) {
         while (fgets(linha, sizeof(linha), f)) {
+            if (linha[0] == '\0' || linha[0] == '\n' || linha[0] == '\r') continue;
             if (*totalManutencoes == *capManutencoes) {
                 *capManutencoes *= 2;
                 *manutencoes = (Manutencao *) realloc(*manutencoes, *capManutencoes * sizeof(Manutencao));
             }
+            n = dividirCampos(linha, campos, 20);
+
             Manutencao m;
-            sscanf(linha, "%d;%19[^;];%99[^;];%19[^;];%19[^;];%f;%d",
-                   &m.idManutencao, m.placaVeiculo, m.descricao, m.dataEntrada,
-                   m.dataSaida, &m.custo, &m.status);
+            memset(&m, 0, sizeof(Manutencao));
+            m.idManutencao = campoInt(0, campos, n, 0);
+            campoTexto(m.placaVeiculo, sizeof(m.placaVeiculo), 1, campos, n);
+            campoTexto(m.descricao, sizeof(m.descricao), 2, campos, n);
+            campoTexto(m.dataEntrada, sizeof(m.dataEntrada), 3, campos, n);
+            campoTexto(m.dataSaida, sizeof(m.dataSaida), 4, campos, n);
+            m.custo = campoFloat(5, campos, n, 0.0f);
+            m.status = campoInt(6, campos, n, 0);
+
             (*manutencoes)[*totalManutencoes] = m;
             (*totalManutencoes)++;
         }

@@ -6,14 +6,6 @@
 #include "../include/util.h"
 #include "../include/clientes.h"
 
-static int cpfApenasNumeros(const char *cpf) {
-    if (strlen(cpf) == 0) return 0;
-    for (int i = 0; cpf[i] != '\0'; i++) {
-        if (!isdigit(cpf[i])) return 0;
-    }
-    return 1;
-}
-
 static int cpfJaExiste(const Cliente clientes[], int total, const char *cpf) {
     for (int i = 0; i < total; i++) {
         if (strcmp(clientes[i].cpf, cpf) == 0) return 1;
@@ -21,20 +13,33 @@ static int cpfJaExiste(const Cliente clientes[], int total, const char *cpf) {
     return 0;
 }
 
+static int cnhJaExiste(const Cliente clientes[], int total, const char *cnh) {
+    for (int i = 0; i < total; i++) {
+        if (strcmp(clientes[i].cnh, cnh) == 0) return 1;
+    }
+    return 0;
+}
+
 void cadastrarCliente(Cliente *c, const Cliente clientes[], int totalClientes) {
     printf("\n--- Novo Cadastro de Cliente ---\n");
-    
-    printf("Nome completo: ");
-    fgets(c->nome, sizeof(c->nome), stdin);
-    c->nome[strcspn(c->nome, "\n")] = '\0';
+
+    do {
+        printf("Nome completo: ");
+        lerLinha(c->nome, sizeof(c->nome));
+
+        if (!somenteLetras(c->nome)) {
+            printf("[ERRO] O nome deve conter apenas letras e espacos!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     do {
         printf("CPF (Apenas numeros): ");
-        fgets(c->cpf, sizeof(c->cpf), stdin);
-        c->cpf[strcspn(c->cpf, "\n")] = '\0';
+        lerLinha(c->cpf, sizeof(c->cpf));
 
-        if (!cpfApenasNumeros(c->cpf)) {
-            printf("[ERRO] O CPF deve conter apenas numeros!\n");
+        if (!cpfValido(c->cpf)) {
+            printf("[ERRO] CPF invalido! Digite 11 numeros correspondentes a um CPF real.\n");
         } else if (cpfJaExiste(clientes, totalClientes, c->cpf)) {
             printf("[ERRO] Este CPF ja esta cadastrado no sistema!\n");
         } else {
@@ -42,71 +47,145 @@ void cadastrarCliente(Cliente *c, const Cliente clientes[], int totalClientes) {
         }
     } while (1);
 
-    int anoAtual = 2026;
     do {
-        printf("Ano de Nascimento (AAAA): ");
-        scanf("%d", &c->anoNascimento);
-        limparBuffer();
+        printf("CNH (Numero de Registro, 11 digitos): ");
+        lerLinha(c->cnh, sizeof(c->cnh));
 
-        if (anoAtual - c->anoNascimento < 18) {
+        if (!cnhValida(c->cnh)) {
+            printf("[ERRO] CNH invalida! Digite 11 numeros.\n");
+        } else if (cnhJaExiste(clientes, totalClientes, c->cnh)) {
+            printf("[ERRO] Esta CNH ja esta cadastrada no sistema!\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    int anoAtual = anoAtualDoSistema();
+    do {
+        printf("Data de Nascimento (DD/MM/AAAA): ");
+        lerLinha(c->dataNascimento, sizeof(c->dataNascimento));
+
+        if (!dataValida(c->dataNascimento)) {
+            printf("[ERRO] Data invalida! Use o formato DD/MM/AAAA.\n");
+        } else if (anoAtual - anoDaData(c->dataNascimento) < 18) {
             printf("[ERRO] O cliente deve ter no minimo 18 anos!\n");
         } else {
             break;
         }
     } while (1);
 
-    printf("Data de Nascimento (DD/MM/AAAA): ");
-    fgets(c->dataNascimento, sizeof(c->dataNascimento), stdin);
-    c->dataNascimento[strcspn(c->dataNascimento, "\n")] = '\0';
+    c->anoNascimento = anoDaData(c->dataNascimento);
 
-    printf("Estado Civil: ");
-    fgets(c->estadoCivil, sizeof(c->estadoCivil), stdin);
-    c->estadoCivil[strcspn(c->estadoCivil, "\n")] = '\0';
+    do {
+        printf("Estado Civil: ");
+        lerLinha(c->estadoCivil, sizeof(c->estadoCivil));
 
-    printf("Telefone: ");
-    fgets(c->telefone, sizeof(c->telefone), stdin);
-    c->telefone[strcspn(c->telefone, "\n")] = '\0';
+        if (!somenteLetras(c->estadoCivil)) {
+            printf("[ERRO] Informe apenas letras!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
-    printf("E-mail: ");
-    fgets(c->email, sizeof(c->email), stdin);
-    c->email[strcspn(c->email, "\n")] = '\0';
+    do {
+        printf("Telefone (Apenas numeros, com DDD): ");
+        lerLinha(c->telefone, sizeof(c->telefone));
 
-    printf("Profissao: ");
-    fgets(c->profissao, sizeof(c->profissao), stdin);
-    c->profissao[strcspn(c->profissao, "\n")] = '\0';
+        if (!somenteDigitos(c->telefone) || strlen(c->telefone) < 10 || strlen(c->telefone) > 11) {
+            printf("[ERRO] Telefone invalido! Digite 10 ou 11 numeros (com DDD).\n");
+        } else {
+            break;
+        }
+    } while (1);
 
-    printf("Renda Mensal: R$ ");
-    scanf("%f", &c->rendaMensal);
-    limparBuffer();
+    do {
+        printf("E-mail: ");
+        lerLinha(c->email, sizeof(c->email));
+
+        if (!emailValido(c->email)) {
+            printf("[ERRO] E-mail invalido! Use o formato usuario@dominio.com.\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("Profissao: ");
+        lerLinha(c->profissao, sizeof(c->profissao));
+
+        if (!somenteLetras(c->profissao)) {
+            printf("[ERRO] Informe apenas letras!\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("Renda Mensal: R$ ");
+        scanf("%f", &c->rendaMensal);
+        limparBuffer();
+
+        if (c->rendaMensal <= 0) {
+            printf("[ERRO] A renda mensal deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     printf("\n-- Endereco do Cliente --\n");
     printf("Rua/Av: ");
-    fgets(c->endereco.rua, sizeof(c->endereco.rua), stdin);
-    c->endereco.rua[strcspn(c->endereco.rua, "\n")] = '\0';
+    lerLinha(c->endereco.rua, sizeof(c->endereco.rua));
 
-    printf("Numero: ");
-    scanf("%d", &c->endereco.numero);
-    limparBuffer();
+    do {
+        printf("Numero: ");
+        scanf("%d", &c->endereco.numero);
+        limparBuffer();
+
+        if (c->endereco.numero <= 0) {
+            printf("[ERRO] O numero deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     printf("Complemento: ");
-    fgets(c->endereco.complemento, sizeof(c->endereco.complemento), stdin);
-    c->endereco.complemento[strcspn(c->endereco.complemento, "\n")] = '\0';
+    lerLinha(c->endereco.complemento, sizeof(c->endereco.complemento));
 
     printf("Bairro: ");
-    fgets(c->endereco.bairro, sizeof(c->endereco.bairro), stdin);
-    c->endereco.bairro[strcspn(c->endereco.bairro, "\n")] = '\0';
+    lerLinha(c->endereco.bairro, sizeof(c->endereco.bairro));
 
-    printf("Cidade: ");
-    fgets(c->endereco.cidade, sizeof(c->endereco.cidade), stdin);
-    c->endereco.cidade[strcspn(c->endereco.cidade, "\n")] = '\0';
+    do {
+        printf("Cidade: ");
+        lerLinha(c->endereco.cidade, sizeof(c->endereco.cidade));
 
-    printf("UF: ");
-    fgets(c->endereco.uf, sizeof(c->endereco.uf), stdin);
-    c->endereco.uf[strcspn(c->endereco.uf, "\n")] = '\0';
+        if (!somenteLetras(c->endereco.cidade)) {
+            printf("[ERRO] Informe apenas letras!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
-    printf("CEP: ");
-    fgets(c->endereco.cep, sizeof(c->endereco.cep), stdin);
-    c->endereco.cep[strcspn(c->endereco.cep, "\n")] = '\0';
+    do {
+        printf("UF (Sigla, ex: SP): ");
+        lerLinha(c->endereco.uf, sizeof(c->endereco.uf));
+
+        if (!somenteLetras(c->endereco.uf) || strlen(c->endereco.uf) != 2) {
+            printf("[ERRO] Informe a sigla do estado com 2 letras!\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("CEP (Apenas numeros): ");
+        lerLinha(c->endereco.cep, sizeof(c->endereco.cep));
+
+        if (!somenteDigitos(c->endereco.cep) || strlen(c->endereco.cep) != 8) {
+            printf("[ERRO] CEP invalido! Digite 8 numeros.\n");
+        } else {
+            break;
+        }
+    } while (1);
 }
 
 void listarClientes(const Cliente clientes[], int total) {
@@ -123,7 +202,7 @@ void listarClientes(const Cliente clientes[], int total) {
 
 void exibirDetalhesCliente(const Cliente *c) {
     printf("\n=== Detalhes do Cliente Encontrado ===\n");
-    printf("Nome: %s | CPF: %s\n", c->nome, c->cpf);
+    printf("Nome: %s | CPF: %s | CNH: %s\n", c->nome, c->cpf, c->cnh);
     printf("Nascimento: %s | Estado Civil: %s | Profissao: %s\n", c->dataNascimento, c->estadoCivil, c->profissao);
     printf("Contato: Tel %s | Email: %s | Renda: R$ %.2f\n", c->telefone, c->email, c->rendaMensal);
     printf("Endereco: %s, %d (%s) - Bairro %s, %s/%s - CEP: %s\n", 
@@ -181,33 +260,68 @@ int clienteTemLocacaoAtiva(const Locacao locacoes[], int totalLocacoes, const ch
 void editarCliente(Cliente *c) {
     char temp[100];
     printf("\n--- Edicao de Cliente (ENTER para manter valor) ---\n");
-    
-    printf("Nome completo ('%s'): ", c->nome);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
-    if (strlen(temp) > 0) strcpy(c->nome, temp);
 
-    printf("Telefone ('%s'): ", c->telefone);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
-    if (strlen(temp) > 0) strcpy(c->telefone, temp);
+    do {
+        printf("Nome completo ('%s'): ", c->nome);
+        lerLinha(temp, sizeof(temp));
 
-    printf("E-mail ('%s'): ", c->email);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
-    if (strlen(temp) > 0) strcpy(c->email, temp);
+        if (strlen(temp) == 0) {
+            break;
+        } else if (!somenteLetras(temp)) {
+            printf("[ERRO] O nome deve conter apenas letras e espacos!\n");
+        } else {
+            strcpy(c->nome, temp);
+            break;
+        }
+    } while (1);
 
-    printf("Profissao ('%s'): ", c->profissao);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
-    if (strlen(temp) > 0) strcpy(c->profissao, temp);
+    do {
+        printf("Telefone ('%s'): ", c->telefone);
+        lerLinha(temp, sizeof(temp));
+
+        if (strlen(temp) == 0) {
+            break;
+        } else if (!somenteDigitos(temp) || strlen(temp) < 10 || strlen(temp) > 11) {
+            printf("[ERRO] Telefone invalido! Digite 10 ou 11 numeros (com DDD).\n");
+        } else {
+            strcpy(c->telefone, temp);
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("E-mail ('%s'): ", c->email);
+        lerLinha(temp, sizeof(temp));
+
+        if (strlen(temp) == 0) {
+            break;
+        } else if (!emailValido(temp)) {
+            printf("[ERRO] E-mail invalido! Use o formato usuario@dominio.com.\n");
+        } else {
+            strcpy(c->email, temp);
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("Profissao ('%s'): ", c->profissao);
+        lerLinha(temp, sizeof(temp));
+
+        if (strlen(temp) == 0) {
+            break;
+        } else if (!somenteLetras(temp)) {
+            printf("[ERRO] Informe apenas letras!\n");
+        } else {
+            strcpy(c->profissao, temp);
+            break;
+        }
+    } while (1);
 }
 
 void apagarCliente(Cliente **clientes, int *total, int *cap, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes) {
     char busca[80];
     printf("Digite o CPF ou Nome para remover: ");
-    fgets(busca, sizeof(busca), stdin);
-    busca[strcspn(busca, "\n")] = '\0';
+    lerLinha(busca, sizeof(busca));
 
     int idx = buscarCliente(*clientes, *total, busca);
     if (idx != -1) {
@@ -240,7 +354,7 @@ void menuClientes(Cliente **clientes, int *total, int *cap, const Venda vendas[]
         printf("\n| 3 - Buscar pessoa                |");
         printf("\n| 4 - Editar pessoa                |");
         printf("\n| 5 - Apagar pessoa                |");
-        printf("\n| 0 - Sair                         |");
+        printf("\n| 0 - Voltar ao Menu Principal     |");
         printf("\n====================================");
         printf("\nOpcao: ");
         scanf("%d", &opcao);
@@ -259,16 +373,14 @@ void menuClientes(Cliente **clientes, int *total, int *cap, const Venda vendas[]
         } else if (opcao == 3) {
             char busca[80];
             printf("Digite o Nome ou CPF: ");
-            fgets(busca, sizeof(busca), stdin);
-            busca[strcspn(busca, "\n")] = '\0';
+            lerLinha(busca, sizeof(busca));
             int idx = buscarCliente(*clientes, *total, busca);
             if (idx != -1) exibirDetalhesCliente(&(*clientes)[idx]);
             else printf("\nCliente nao encontrado.\n");
         } else if (opcao == 4) {
             char busca[80];
             printf("Digite o CPF ou Nome para editar: ");
-            fgets(busca, sizeof(busca), stdin);
-            busca[strcspn(busca, "\n")] = '\0';
+            lerLinha(busca, sizeof(busca));
             int idx = buscarCliente(*clientes, *total, busca);
             if (idx != -1) {
                 editarCliente(&(*clientes)[idx]);

@@ -31,6 +31,14 @@ int main(void) {
         return 1;
     }
 
+    // Carrega os dados salvos em execucoes anteriores (clientes.csv,
+    // veiculos.csv, vendas.csv, locacoes.csv, manutencoes.csv), se existirem.
+    carregarDadosCSV(&clientes, &totalClientes, &capacidadeClientes,
+                      &veiculos, &totalVeiculos, &capacidadeVeiculos,
+                      &vendas, &totalVendas, &capacidadeVendas,
+                      &locacoes, &totalLocacoes, &capacidadeLocacoes,
+                      &manutencoes, &totalManutencoes, &capacidadeManutencoes);
+
     int opcao;
     do {
         printf("\n====================================");
@@ -51,11 +59,20 @@ int main(void) {
         if (opcao == 1) menuClientes(&clientes, &totalClientes, &capacidadeClientes, vendas, totalVendas, locacoes, totalLocacoes);
         else if (opcao == 2) menuVeiculos(&veiculos, &totalVeiculos, &capacidadeVeiculos, vendas, totalVendas, locacoes, totalLocacoes);
         else if (opcao == 3) menuVendas(&veiculos, &totalVeiculos, &clientes, &totalClientes, &capacidadeClientes, &vendas, &totalVendas, &capacidadeVendas);
-        else if (opcao == 4) menuLocacoes(&veiculos, totalVeiculos, &clientes, totalClientes, &locacoes, &totalLocacoes, &capacidadeLocacoes);
+        else if (opcao == 4) menuLocacoes(&veiculos, totalVeiculos, &clientes, &totalClientes, &capacidadeClientes, &locacoes, &totalLocacoes, &capacidadeLocacoes);
         else if (opcao == 5) menuManutencao(&veiculos, totalVeiculos, &manutencoes, &totalManutencoes, &capacidadeManutencoes);
         else if (opcao == 6) menuRelatorios(veiculos, totalVeiculos, vendas, totalVendas, locacoes, totalLocacoes, manutencoes, totalManutencoes);
+        else if (opcao != 0) printf("\n[ERRO] Opcao invalida!\n");
+
+        // Grava tudo em CSV assim que o usuario volta ao menu principal
+        if (opcao != 0) {
+            salvarDadosCSV(clientes, totalClientes, veiculos, totalVeiculos, vendas, totalVendas, locacoes, totalLocacoes, manutencoes, totalManutencoes);
+        }
 
     } while (opcao != 0);
+
+    // Salvamento final ao encerrar o sistema normalmente (opcao 0).
+    salvarDadosCSV(clientes, totalClientes, veiculos, totalVeiculos, vendas, totalVendas, locacoes, totalLocacoes, manutencoes, totalManutencoes);
 
     free(clientes);
     free(veiculos);

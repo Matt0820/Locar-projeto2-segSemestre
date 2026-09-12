@@ -19,12 +19,11 @@ int buscarLocacaoAtiva(const Locacao locacoes[], int total, const char placa[]) 
     return -1;
 }
 
-void iniciarLocacao(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, int totalClientes, Locacao **locacoes, int *totalLocacoes, int *capLocacoes) {
+void iniciarLocacao(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, int *totalClientes, int *capClientes, Locacao **locacoes, int *totalLocacoes, int *capLocacoes) {
     char placa[20];
     printf("\n--- INICIAR LOCACAO ---\n");
     printf("Placa do veiculo: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     int idxV = buscarVeiculo(*veiculos, totalVeiculos, placa);
     if (idxV == -1) {
@@ -33,8 +32,61 @@ void iniciarLocacao(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, i
     }
 
     if ((*veiculos)[idxV].status != 0) {
-        printf("Erro: Veiculo indisponivel (Status atual: %s).\n", (*veiculos)[idxV].status == 1 ? "Alugado" : "Vendido");
+
+        char *statusTexto;
+
+        if ((*veiculos)[idxV].status == 1)
+            statusTexto = "Alugado";
+        else if ((*veiculos)[idxV].status == 2)
+            statusTexto = "Vendido";
+        else
+            statusTexto = "Em Manutencao";
+
+        printf("Erro: Veiculo indisponivel (Status atual: %s).\n", statusTexto);
         return;
+    }
+
+    Locacao nova;
+    strcpy(nova.placaVeiculo, (*veiculos)[idxV].placa);
+    
+    do {
+        printf("CPF do Cliente: ");
+        lerLinha(nova.cpfCliente, sizeof(nova.cpfCliente));
+
+        if (!cpfValido(nova.cpfCliente)) {
+            printf("[ERRO] CPF invalido! Digite 11 numeros correspondentes a um CPF real.\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    if (buscarCliente(*clientes, *totalClientes, nova.cpfCliente) == -1) {
+        int opcaoCliente;
+        do {
+            printf("\nCliente com este CPF nao encontrado no sistema.\n");
+            printf("1 - Cadastrar novo cliente agora\n");
+            printf("2 - Voltar ao menu de locacoes (cancelar)\n");
+            printf("Opcao: ");
+            scanf("%d", &opcaoCliente);
+            limparBuffer();
+
+            if (opcaoCliente != 1 && opcaoCliente != 2) {
+                printf("[ERRO] Opcao invalida! Escolha 1 ou 2.\n");
+            }
+        } while (opcaoCliente != 1 && opcaoCliente != 2);
+
+        if (opcaoCliente == 2) {
+            printf("\nLocacao cancelada.\n");
+            return;
+        }
+
+        if (*totalClientes == *capClientes) {
+            *capClientes *= 2;
+            *clientes = (Cliente *) realloc(*clientes, *capClientes * sizeof(Cliente));
+        }
+        cadastrarCliente(&(*clientes)[*totalClientes], *clientes, *totalClientes);
+        (*totalClientes)++;
+        printf("\nCliente cadastrado com sucesso!\n");
     }
 
     if (*totalLocacoes == *capLocacoes) {
@@ -42,25 +94,30 @@ void iniciarLocacao(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, i
         *locacoes = (Locacao *) realloc(*locacoes, *capLocacoes * sizeof(Locacao));
     }
 
-    Locacao nova;
     nova.idLocacao = (*totalLocacoes) + 1;
-    strcpy(nova.placaVeiculo, (*veiculos)[idxV].placa);
-    
-    printf("CPF do Cliente: ");
-    fgets(nova.cpfCliente, sizeof(nova.cpfCliente), stdin);
-    nova.cpfCliente[strcspn(nova.cpfCliente, "\n")] = '\0';
-    
-    if(buscarCliente(*clientes, totalClientes, nova.cpfCliente) == -1){
-        printf("Aviso: CPF nao encontrado no cadastro de clientes. Registre o cliente posteriormente.\n");
-    }
 
-    printf("Data de Inicio (DD/MM/AAAA): ");
-    fgets(nova.dataInicio, sizeof(nova.dataInicio), stdin);
-    nova.dataInicio[strcspn(nova.dataInicio, "\n")] = '\0';
+    do {
+        printf("Data de Inicio (DD/MM/AAAA): ");
+        lerLinha(nova.dataInicio, sizeof(nova.dataInicio));
+
+        if (!dataValida(nova.dataInicio)) {
+            printf("[ERRO] Data invalida! Use o formato DD/MM/AAAA.\n");
+        } else {
+            break;
+        }
+    } while (1);
     
-    printf("Dias Previstos: ");
-    scanf("%d", &nova.diasPrevistos);
-    limparBuffer();
+    do {
+        printf("Dias Previstos: ");
+        scanf("%d", &nova.diasPrevistos);
+        limparBuffer();
+
+        if (nova.diasPrevistos <= 0) {
+            printf("[ERRO] A quantidade de dias deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     nova.kmInicial = (*veiculos)[idxV].km;
     nova.valorDiaria = (*veiculos)[idxV].valorDiaria;
@@ -69,6 +126,7 @@ void iniciarLocacao(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, i
     nova.taxaAvariaMulta = 0.0;
     nova.kmFinal = 0;
     nova.diasUtilizados = 0;
+    nova.formaPagamento = 0; 
 
     (*locacoes)[*totalLocacoes] = nova;
     (*totalLocacoes)++;
@@ -81,8 +139,7 @@ void estenderLocacao(Locacao **locacoes, int totalLocacoes) {
     char placa[20];
     printf("\n--- ESTENDER LOCACAO ---\n");
     printf("Placa do veiculo: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     int idxL = buscarLocacaoAtiva(*locacoes, totalLocacoes, placa);
     if (idxL == -1) {
@@ -91,9 +148,17 @@ void estenderLocacao(Locacao **locacoes, int totalLocacoes) {
     }
 
     int diasExtras;
-    printf("Quantos dias deseja adicionar? ");
-    scanf("%d", &diasExtras);
-    limparBuffer();
+    do {
+        printf("Quantos dias deseja adicionar? ");
+        scanf("%d", &diasExtras);
+        limparBuffer();
+
+        if (diasExtras <= 0) {
+            printf("[ERRO] A quantidade de dias deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     (*locacoes)[idxL].diasPrevistos += diasExtras;
     (*locacoes)[idxL].valorTotal = (*locacoes)[idxL].diasPrevistos * (*locacoes)[idxL].valorDiaria;
@@ -106,8 +171,7 @@ void finalizarLocacao(Veiculo **veiculos, int totalVeiculos, Locacao **locacoes,
     char placa[20];
     printf("\n--- FINALIZAR LOCACAO ---\n");
     printf("Placa do veiculo: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     int idxL = buscarLocacaoAtiva(*locacoes, totalLocacoes, placa);
     if (idxL == -1) {
@@ -117,8 +181,16 @@ void finalizarLocacao(Veiculo **veiculos, int totalVeiculos, Locacao **locacoes,
 
     int idxV = buscarVeiculo(*veiculos, totalVeiculos, placa);
 
-    printf("Dias efetivamente utilizados: ");
-    scanf("%d", &(*locacoes)[idxL].diasUtilizados);
+    do {
+        printf("Dias efetivamente utilizados: ");
+        scanf("%d", &(*locacoes)[idxL].diasUtilizados);
+
+        if ((*locacoes)[idxL].diasUtilizados < 0) {
+            printf("[ERRO] A quantidade de dias nao pode ser negativa!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     printf("Quilometragem final de devolucao: ");
     scanf("%d", &(*locacoes)[idxL].kmFinal);
@@ -128,14 +200,30 @@ void finalizarLocacao(Veiculo **veiculos, int totalVeiculos, Locacao **locacoes,
         scanf("%d", &(*locacoes)[idxL].kmFinal);
     }
 
-    printf("Taxas Adicionais / Multas / Avarias (R$ 0.00 se nenhuma): ");
-    scanf("%f", &(*locacoes)[idxL].taxaAvariaMulta);
+    do {
+        printf("Taxas Adicionais / Multas / Avarias (R$ 0.00 se nenhuma): ");
+        scanf("%f", &(*locacoes)[idxL].taxaAvariaMulta);
+
+        if ((*locacoes)[idxL].taxaAvariaMulta < 0) {
+            printf("[ERRO] O valor nao pode ser negativo!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     (*locacoes)[idxL].valorTotal = ((*locacoes)[idxL].diasUtilizados * (*locacoes)[idxL].valorDiaria) + (*locacoes)[idxL].taxaAvariaMulta;
 
-    printf("Forma de Pagamento (1-PIX, 2-Cartao, 3-Dinheiro): ");
-    scanf("%d", &(*locacoes)[idxL].formaPagamento);
-    limparBuffer();
+    do {
+        printf("Forma de Pagamento (1-PIX, 2-Cartao, 3-Dinheiro): ");
+        scanf("%d", &(*locacoes)[idxL].formaPagamento);
+        limparBuffer();
+
+        if ((*locacoes)[idxL].formaPagamento < 1 || (*locacoes)[idxL].formaPagamento > 3) {
+            printf("[ERRO] Opcao invalida! Escolha 1, 2 ou 3.\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     (*locacoes)[idxL].status = 0;              
     (*veiculos)[idxV].status = 0;                 
@@ -175,7 +263,7 @@ void historicoLocacoes(const Locacao locacoes[], int totalLocacoes) {
     if (encontradas == 0) printf("Nenhum historico encontrado.\n");
 }
 
-void menuLocacoes(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, int totalClientes, Locacao **locacoes, int *totalLocacoes, int *capLocacoes) {
+void menuLocacoes(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, int *totalClientes, int *capClientes, Locacao **locacoes, int *totalLocacoes, int *capLocacoes) {
     int opcao;
     do {
         printf("\n====================================");
@@ -192,7 +280,7 @@ void menuLocacoes(Veiculo **veiculos, int totalVeiculos, Cliente **clientes, int
         scanf("%d", &opcao);
         limparBuffer();
 
-        if (opcao == 1) iniciarLocacao(veiculos, totalVeiculos, clientes, totalClientes, locacoes, totalLocacoes, capLocacoes);
+        if (opcao == 1) iniciarLocacao(veiculos, totalVeiculos, clientes, totalClientes, capClientes, locacoes, totalLocacoes, capLocacoes);
         else if (opcao == 2) estenderLocacao(locacoes, *totalLocacoes);
         else if (opcao == 3) finalizarLocacao(veiculos, totalVeiculos, locacoes, *totalLocacoes);
         else if (opcao == 4) listarLocacoesAtivas(*locacoes, *totalLocacoes);

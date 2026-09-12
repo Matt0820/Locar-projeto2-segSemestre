@@ -1,51 +1,123 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "../include/modelos.h"
 #include "../include/util.h"
 #include "../include/veiculos.h"
+
+static int placaValida(const char *placa) {
+    int len = strlen(placa);
+    // Aceita formato antigo (ABC1234, 7 caracteres) e o formato Mercosul (ABC1D23, 7 caracteres).
+    if (len != 7) return 0;
+
+    for (int i = 0; placa[i] != '\0'; i++) {
+        if (!isalnum((unsigned char) placa[i])) return 0;
+    }
+    return 1;
+}
+
+float calcularValorDepreciado(const Veiculo *v) {
+    int anoAtual = anoAtualDoSistema();
+    int idade = anoAtual - v->ano;
+    if (idade < 0) idade = 0;
+
+    // Depreciacao linear de 10% ao ano sobre o valor de compra, limitada a no maximo 70% de desvalorizacao total (o veiculo nunca vale menos que 30% do valor pago, evitando valores irreais para carros antigos).
+    const float taxaAnual = 0.10f;
+    const float fatorMinimo = 0.30f;
+
+    float fator = 1.0f - (taxaAnual * idade);
+    if (fator < fatorMinimo) fator = fatorMinimo;
+
+    return v->valorCompra * fator;
+}
 
 void cadastrarVeiculo(Veiculo *v, const Veiculo veiculos[], int totalVeiculos) {
     printf("\n--- Novo Cadastro de Veiculo ---\n");
     
     do {
-        printf("Placa: ");
-        fgets(v->placa, sizeof(v->placa), stdin);
-        v->placa[strcspn(v->placa, "\n")] = '\0';
+        printf("Placa (Ex: ABC1D23): ");
+        lerLinha(v->placa, sizeof(v->placa));
 
-        if (buscarVeiculo(veiculos, totalVeiculos, v->placa) != -1) {
+        if (!placaValida(v->placa)) {
+            printf("[ERRO] Placa invalida! Digite 7 caracteres alfanumericos (Ex: ABC1D23).\n");
+        } else if (buscarVeiculo(veiculos, totalVeiculos, v->placa) != -1) {
             printf("[ERRO] Esta placa ja esta cadastrada no sistema!\n");
         } else {
             break;
         }
     } while (1);
 
-    printf("Marca: ");
-    fgets(v->marca, sizeof(v->marca), stdin);
-    v->marca[strcspn(v->marca, "\n")] = '\0';
+    do {
+        printf("Marca: ");
+        lerLinha(v->marca, sizeof(v->marca));
 
-    printf("Modelo: ");
-    fgets(v->modelo, sizeof(v->modelo), stdin);
-    v->modelo[strcspn(v->modelo, "\n")] = '\0';
+        if (strlen(v->marca) == 0) {
+            printf("[ERRO] A marca nao pode ficar em branco!\n");
+        } else {
+            break;
+        }
+    } while (1);
 
-    printf("Ano: ");
-    scanf("%d", &v->ano);
+    do {
+        printf("Modelo: ");
+        lerLinha(v->modelo, sizeof(v->modelo));
+
+        if (strlen(v->modelo) == 0) {
+            printf("[ERRO] O modelo nao pode ficar em branco!\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    int anoAtual = anoAtualDoSistema();
+    do {
+        printf("Ano: ");
+        scanf("%d", &v->ano);
+        limparBuffer();
+
+        if (v->ano < 1950 || v->ano > anoAtual + 1) {
+            printf("[ERRO] Ano invalido! Digite um ano entre 1950 e %d.\n", anoAtual + 1);
+        } else {
+            break;
+        }
+    } while (1);
 
     do {
         printf("Valor de Compra R$: ");
         scanf("%f", &v->valorCompra);
-        printf("Valor de Venda R$: ");
-        scanf("%f", &v->valor);
-        if (v->valor <= 0 || v->valorCompra <= 0) {
-            printf("[ERRO] Os valores de compra e venda devem ser maiores que zero!\n");
-        } else break;
-    } while (1);
+        limparBuffer();
 
-    printf("Quilometragem atual: ");
-    scanf("%d", &v->km);
+        if (v->valorCompra <= 0) {
+            printf("[ERRO] O valor de compra deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
+ 
+    v->valor = calcularValorDepreciado(v);
+
+    do {
+        printf("Quilometragem atual: ");
+        scanf("%d", &v->km);
+
+        if (v->km < 0) {
+            printf("[ERRO] A quilometragem nao pode ser negativa!\n");
+        } else {
+            break;
+        }
+    } while (1);
     
-    printf("Valor Diaria Locacao R$: ");
-    scanf("%f", &v->valorDiaria);
+    do {
+        printf("Valor Diaria Locacao R$: ");
+        scanf("%f", &v->valorDiaria);
+
+        if (v->valorDiaria <= 0) {
+            printf("[ERRO] O valor da diaria deve ser maior que zero!\n");
+        } else {
+            break;
+        }
+    } while (1);
     limparBuffer();
     
     v->status = 0; // Disponível por padrão
@@ -56,9 +128,9 @@ void listarVeiculosDisponiveis(const Veiculo veiculos[], int total) {
     printf("\n=== Veiculos Disponiveis no Estoque ===\n");
     for (int i = 0; i < total; i++) {
         if (veiculos[i].status == 0) {
-            printf("%d) %s %s (%d) | Placa: %s | Valor: R$ %.2f | KM: %d\n", 
+            printf("%d) %s %s (%d) | Placa: %s | Valor de Mercado (est.): R$ %.2f | KM: %d\n", 
                    i + 1, veiculos[i].marca, veiculos[i].modelo, veiculos[i].ano, 
-                   veiculos[i].placa, veiculos[i].valor, veiculos[i].km);
+                   veiculos[i].placa, calcularValorDepreciado(&veiculos[i]), veiculos[i].km);
             encontrados++;
         }
     }
@@ -78,7 +150,7 @@ void procurarVeiculosAvancado(const Veiculo veiculos[], int total) {
     printf("\n1 - Por Nome/Modelo");
     printf("\n2 - Por Marca");
     printf("\n3 - Por Placa");
-    printf("\n4 - Por Valor (Maior, Menor ou Igual)");
+    printf("\n4 - Por Valor de Mercado (Maior, Menor ou Igual)");
     printf("\nOpcao: ");
     scanf("%d", &opcao);
     limparBuffer();
@@ -86,31 +158,28 @@ void procurarVeiculosAvancado(const Veiculo veiculos[], int total) {
     if (opcao == 1) {
         char modelo[50];
         printf("Digite o Modelo: ");
-        fgets(modelo, sizeof(modelo), stdin);
-        modelo[strcspn(modelo, "\n")] = '\0';
+        lerLinha(modelo, sizeof(modelo));
         for (int i = 0; i < total; i++) {
             if (strstr(veiculos[i].modelo, modelo) != NULL) {
-                printf("Placa: %s | %s %s | Valor: R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, veiculos[i].valor);
+                printf("Placa: %s | %s %s | Valor de Mercado (est.): R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, calcularValorDepreciado(&veiculos[i]));
             }
         }
     } else if (opcao == 2) {
         char marca[50];
         printf("Digite a Marca: ");
-        fgets(marca, sizeof(marca), stdin);
-        marca[strcspn(marca, "\n")] = '\0';
+        lerLinha(marca, sizeof(marca));
         for (int i = 0; i < total; i++) {
             if (strstr(veiculos[i].marca, marca) != NULL) {
-                printf("Placa: %s | %s %s | Valor: R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, veiculos[i].valor);
+                printf("Placa: %s | %s %s | Valor de Mercado (est.): R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, calcularValorDepreciado(&veiculos[i]));
             }
         }
     } else if (opcao == 3) {
         char placa[20];
         printf("Digite a Placa: ");
-        fgets(placa, sizeof(placa), stdin);
-        placa[strcspn(placa, "\n")] = '\0';
+        lerLinha(placa, sizeof(placa));
         int idx = buscarVeiculo(veiculos, total, placa);
         if (idx != -1) {
-            printf("Placa: %s | %s %s | Valor: R$%.2f\n", veiculos[idx].placa, veiculos[idx].marca, veiculos[idx].modelo, veiculos[idx].valor);
+            printf("Placa: %s | %s %s | Valor de Mercado (est.): R$%.2f\n", veiculos[idx].placa, veiculos[idx].marca, veiculos[idx].modelo, calcularValorDepreciado(&veiculos[idx]));
         } else printf("Veiculo nao encontrado.\n");
     } else if (opcao == 4) {
         int comp;
@@ -122,10 +191,11 @@ void procurarVeiculosAvancado(const Veiculo veiculos[], int total) {
         limparBuffer();
 
         for (int i = 0; i < total; i++) {
-            if ((comp == 1 && veiculos[i].valor > valorRef) ||
-                (comp == 2 && veiculos[i].valor < valorRef) ||
-                (comp == 3 && veiculos[i].valor == valorRef)) {
-                printf("Placa: %s | %s %s | Valor: R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, veiculos[i].valor);
+            float valorAtual = calcularValorDepreciado(&veiculos[i]);
+            if ((comp == 1 && valorAtual > valorRef) ||
+                (comp == 2 && valorAtual < valorRef) ||
+                (comp == 3 && valorAtual == valorRef)) {
+                printf("Placa: %s | %s %s | Valor de Mercado (est.): R$%.2f\n", veiculos[i].placa, veiculos[i].marca, veiculos[i].modelo, valorAtual);
             }
         }
     }
@@ -136,29 +206,30 @@ void editarVeiculo(Veiculo *v) {
     printf("\n--- Edicao de Veiculo (ENTER para manter) ---\n");
 
     printf("Marca ('%s'): ", v->marca);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
+    lerLinha(temp, sizeof(temp));
     if (strlen(temp) > 0) strcpy(v->marca, temp);
 
     printf("Modelo ('%s'): ", v->modelo);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
+    lerLinha(temp, sizeof(temp));
     if (strlen(temp) > 0) strcpy(v->modelo, temp);
 
-    printf("Valor ('%.2f'): R$ ", v->valor);
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
+    printf("Valor de Compra ('%.2f'): R$ ", v->valorCompra);
+    lerLinha(temp, sizeof(temp));
     if (strlen(temp) > 0) {
         float nVal;
-        if (sscanf(temp, "%f", &nVal) == 1 && nVal > 0) v->valor = nVal;
+        if (sscanf(temp, "%f", &nVal) == 1 && nVal > 0) {
+            v->valorCompra = nVal;
+            v->valor = calcularValorDepreciado(v); // reajusta o valor
+        } else {
+            printf("[AVISO] Valor invalido informado; valor anterior foi mantido.\n");
+        }
     }
 }
 
 void apagarVeiculo(Veiculo **veiculos, int *total, int *cap, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes) {
     char placa[20];
     printf("Digite a Placa do veiculo a remover: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     int idx = buscarVeiculo(*veiculos, *total, placa);
     if (idx == -1) {
@@ -192,7 +263,7 @@ void menuVeiculos(Veiculo **veiculos, int *total, int *cap, const Venda vendas[]
         printf("\n| 3 - Procurar veiculos            |");
         printf("\n| 4 - Editar veiculo               |");
         printf("\n| 5 - Apagar veiculo               |");
-        printf("\n| 0 - Sair                         |");
+        printf("\n| 0 - Voltar ao Menu Principal     |");
         printf("\n====================================");
         printf("\nOpcao: ");
         scanf("%d", &opcao);
@@ -213,8 +284,7 @@ void menuVeiculos(Veiculo **veiculos, int *total, int *cap, const Venda vendas[]
         } else if (opcao == 4) {
             char placa[20];
             printf("Placa do veiculo a editar: ");
-            fgets(placa, sizeof(placa), stdin);
-            placa[strcspn(placa, "\n")] = '\0';
+            lerLinha(placa, sizeof(placa));
             int idx = buscarVeiculo(*veiculos, *total, placa);
             if (idx != -1) {
                 editarVeiculo(&(*veiculos)[idx]);

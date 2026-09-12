@@ -1,50 +1,56 @@
 [
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/main.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/main.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/main.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/main.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\main.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\main.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/main.c",
+  "output": "CMakeFiles/Locar.dir/main.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/clientes.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/clientes.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/clientes.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/clientes.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\clientes.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\clientes.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/clientes.c",
+  "output": "CMakeFiles/Locar.dir/src/clientes.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/locacoes.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/locacoes.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/locacoes.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/locacoes.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\locacoes.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\locacoes.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/locacoes.c",
+  "output": "CMakeFiles/Locar.dir/src/locacoes.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/relatorios.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/relatorios.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/relatorios.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/relatorios.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\relatorios.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\relatorios.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/relatorios.c",
+  "output": "CMakeFiles/Locar.dir/src/relatorios.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/veiculos.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/veiculos.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/veiculos.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/veiculos.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\veiculos.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\veiculos.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/veiculos.c",
+  "output": "CMakeFiles/Locar.dir/src/veiculos.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/vendas.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/vendas.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/vendas.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/vendas.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\vendas.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\vendas.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/vendas.c",
+  "output": "CMakeFiles/Locar.dir/src/vendas.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/src/util.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/util.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/src/util.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/src/util.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\util.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\util.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/util.c",
+  "output": "CMakeFiles/Locar.dir/src/util.c.obj"
 },
 {
-  "directory": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build",
-  "command": "/usr/bin/gcc -I\"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/include\" -g -std=gnu99 -o CMakeFiles/Locar.dir/data/dados.c.o -c \"/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/data/dados.c\"",
-  "file": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/data/dados.c",
-  "output": "/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir/data/dados.c.o"
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\data\\dados.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\data\\dados.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/data/dados.c",
+  "output": "CMakeFiles/Locar.dir/data/dados.c.obj"
+},
+{
+  "directory": "C:/Users/teste/Projetos python/C++/Locar/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe  @CMakeFiles\\Locar.dir\\includes_C.rsp -g -std=gnu99 -o CMakeFiles\\Locar.dir\\src\\manutencao.c.obj -c \"C:\\Users\\teste\\Projetos python\\C++\\Locar\\src\\manutencao.c\"",
+  "file": "C:/Users/teste/Projetos python/C++/Locar/src/manutencao.c",
+  "output": "CMakeFiles/Locar.dir/src/manutencao.c.obj"
 }
 ]

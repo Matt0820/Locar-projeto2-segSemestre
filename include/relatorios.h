@@ -7,6 +7,10 @@ void relatorioVendasLocacoesPorPeriodo(const Venda vendas[], int totalVendas, co
 void resumoFinanceiroGeral(const Veiculo veiculos[], int totalVeiculos, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes, const Manutencao manutencoes[], int totalManutencoes);
 void relatorioVeiculosVendidos(const Venda vendas[], int totalVendas);
 void relatorioDespesasManutencao(const Manutencao manutencoes[], int totalManutencoes);
+
+// Gera um relatorio geral consolidado, formatado, e salva em data/relatorio.txt
+void exportarRelatorioTXT(const Veiculo veiculos[], int totalVeiculos, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes, const Manutencao manutencoes[], int totalManutencoes);
+
 void menuRelatorios(const Veiculo veiculos[], int totalVeiculos, const Venda vendas[], int totalVendas, const Locacao locacoes[], int totalLocacoes, const Manutencao manutencoes[], int totalManutencoes);
 
 #endif

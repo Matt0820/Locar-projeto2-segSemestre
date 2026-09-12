@@ -9,8 +9,7 @@
 void registrarManutencao(Veiculo **veiculos, int totalVeiculos, Manutencao **manutencoes, int *totalManutencoes, int *capManutencoes) {
     char placa[20];
     printf("\nDigite a placa do veiculo para manutencao: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     int idxV = buscarVeiculo(*veiculos, totalVeiculos, placa);
     if (idxV == -1) {
@@ -32,13 +31,27 @@ void registrarManutencao(Veiculo **veiculos, int totalVeiculos, Manutencao **man
     m.idManutencao = (*totalManutencoes) + 1;
     strcpy(m.placaVeiculo, placa);
     
-    printf("Descricao do problema/servico: ");
-    fgets(m.descricao, sizeof(m.descricao), stdin);
-    m.descricao[strcspn(m.descricao, "\n")] = '\0';
+    do {
+        printf("Descricao do problema/servico: ");
+        lerLinha(m.descricao, sizeof(m.descricao));
 
-    printf("Data de Entrada (DD/MM/AAAA): ");
-    fgets(m.dataEntrada, sizeof(m.dataEntrada), stdin);
-    m.dataEntrada[strcspn(m.dataEntrada, "\n")] = '\0';
+        if (strlen(m.descricao) == 0) {
+            printf("[ERRO] A descricao nao pode ficar em branco!\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    do {
+        printf("Data de Entrada (DD/MM/AAAA): ");
+        lerLinha(m.dataEntrada, sizeof(m.dataEntrada));
+
+        if (!dataValida(m.dataEntrada)) {
+            printf("[ERRO] Data invalida! Use o formato DD/MM/AAAA.\n");
+        } else {
+            break;
+        }
+    } while (1);
 
     m.custo = 0.0;
     m.status = 1; // Em andamento
@@ -54,18 +67,32 @@ void registrarManutencao(Veiculo **veiculos, int totalVeiculos, Manutencao **man
 void finalizarManutencao(Veiculo **veiculos, int totalVeiculos, Manutencao **manutencoes, int totalManutencoes) {
     char placa[20];
     printf("\nDigite a placa do veiculo em manutencao: ");
-    fgets(placa, sizeof(placa), stdin);
-    placa[strcspn(placa, "\n")] = '\0';
+    lerLinha(placa, sizeof(placa));
 
     for (int i = 0; i < totalManutencoes; i++) {
         if (strcmp((*manutencoes)[i].placaVeiculo, placa) == 0 && (*manutencoes)[i].status == 1) {
-            printf("Data de Saida (DD/MM/AAAA): ");
-            fgets((*manutencoes)[i].dataSaida, sizeof((*manutencoes)[i].dataSaida), stdin);
-            (*manutencoes)[i].dataSaida[strcspn((*manutencoes)[i].dataSaida, "\n")] = '\0';
+            do {
+                printf("Data de Saida (DD/MM/AAAA): ");
+                lerLinha((*manutencoes)[i].dataSaida, sizeof((*manutencoes)[i].dataSaida));
 
-            printf("Custo total do servico R$: ");
-            scanf("%f", &(*manutencoes)[i].custo);
-            limparBuffer();
+                if (!dataValida((*manutencoes)[i].dataSaida)) {
+                    printf("[ERRO] Data invalida! Use o formato DD/MM/AAAA.\n");
+                } else {
+                    break;
+                }
+            } while (1);
+
+            do {
+                printf("Custo total do servico R$: ");
+                scanf("%f", &(*manutencoes)[i].custo);
+                limparBuffer();
+
+                if ((*manutencoes)[i].custo < 0) {
+                    printf("[ERRO] O custo nao pode ser negativo!\n");
+                } else {
+                    break;
+                }
+            } while (1);
 
             (*manutencoes)[i].status = 0; // Finalizado
 

@@ -14,6 +14,7 @@ typedef struct {
 typedef struct {
     char nome[80];
     char cpf[20];
+    char cnh[20];
     char dataNascimento[20];
     int anoNascimento;
     char estadoCivil[30];
@@ -42,6 +43,9 @@ typedef struct {
     Cliente cliente;
     char dataVenda[20];
     float valorFinal;
+    int formaPagamento;  // 1 = A Vista, 2 = Financiado
+    int numParcelas;     // 0 se a vista, ou 12/24/36/48/60 se financiado
+    float valorParcela;  // 0 se a vista, valor de cada parcela se financiado
 } Venda;
 
 typedef struct {

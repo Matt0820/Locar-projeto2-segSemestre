@@ -5,13 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb-dap",
+            "name": "Launch",
+            "type": "lldb",
             "request": "launch",
-            "name": "Debug",
-            "program": "${workspaceFolder}/<your program>",
+            "program": "${workspaceRoot}/<your program>",
             "args": [],
-            "env": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceRoot}"
         }
     ]
 }

@@ -1,3 +1,3 @@
-/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/Locar.dir
-/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/edit_cache.dir
-/home/henry/Documents/C Projects/Locar-projeto2-segSemestre/build/CMakeFiles/rebuild_cache.dir
+C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/Locar.dir
+C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/edit_cache.dir
+C:/Users/teste/Projetos python/C++/Locar/build/CMakeFiles/rebuild_cache.dir
